@@ -1,36 +1,26 @@
-import inputIsValid from "./inputIsValid";
-import throwError from "./throwError";
-
-
-const or = (values, returnValueOnEmptyInput = 'default') => {
-
-  if (!inputIsValid(values)) {
-    return throwError();
-  }
-
-  // If the passed input is empty
-  if (values === undefined || values === null || values.length === 0) {
-    switch (returnValueOnEmptyInput) {
-      case false: {
-        return false;
-      }
-
-      case 'false': {
-        return false;
-      }
-
-      case 'throw': {
-        return throwError();
-      }
-
-      default: {
-        return true;
-      }
+const or = (foundFalse) => (...values) => {
+  if (values.length === 0) {
+    if (foundFalse === true) {
+      return false;
     }
+    return null;
   }
 
-  return values.filter(v => v === true).length > 0;
+  const [value] = values;
 
+  if (value === true) {
+    return true;
+  }
+
+  if (!["boolean", "undefined", "null", "NaN"].includes(typeof value)) {
+    return value;
+  }
+
+  if (value === false) {
+    return or(true)(...values.slice(1));
+  }
+
+  return or(foundFalse)(...values.slice(1));
 };
 
-export default or;
+export default or(false);
